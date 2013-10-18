@@ -1,14 +1,17 @@
 from google.appengine.ext import db
 from random import randint
+import logging
 
-EMPTY, RESERVED, OCCUPIED = 0,1,2
+EMPTY, RESERVED, OCCUPIED = 0, 1, 2
 SEAT_STATES = [EMPTY, RESERVED, OCCUPIED]
 
 HOUSE_EDGE = 0.2
-
-class Table(db.Model):
-    price = db.IntegerProperty(required=True) # in satoshis
-    seats = db.ListProperty(db.Key, required=True)
+class SerializableModel(db.Model):
+    def to_dict(self):
+        return db.to_dict(self)
+    
+class Table(SerializableModel):
+    price = db.IntegerProperty(required=True)  # in satoshis
     
     def is_ready(self):
         return all(seat.is_occupied() for seat in self.seats)
@@ -25,13 +28,21 @@ class Table(db.Model):
         gh = GameHistory(table=self, winner=winner, players=players)
         gh.put()
         return gh
-        
     
-class Seat(db.Model):
+    @classmethod
+    def get_all(cls):
+        r = []
+        for table in cls.all():
+            d = table.to_dict()
+            d["seats"] = [seat.to_dict() for seat in table.seats]
+            r.append(d)
+        return r
+    
+class Seat(SerializableModel):
+    table = db.ReferenceProperty(Table, collection_name='seats')
     number = db.IntegerProperty(required=True)
     purchase_addr = db.StringProperty(required=True)
     state = db.IntegerProperty(required=True, choices=SEAT_STATES)
-    
     owner = db.StringProperty()
     
     def is_empty(self):
@@ -57,12 +68,12 @@ class Seat(db.Model):
         self.state = OCCUPIED
         self.put()
     
-    @property
-    def table(self):
-        return Table.all().filter('seats =', self.key()).get()
+    @classmethod
+    def get_all(cls):
+        return [seat.to_dict() for seat in cls.all().run()]
+    
 
-
-class GameHistory(db.Model):
+class GameHistory(SerializableModel):
     timestamp = db.DateTimeProperty(required=True, auto_now_add=True)
     table = db.ReferenceProperty(Table, required=True)
     winner = db.IntegerProperty(required=True)
