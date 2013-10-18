@@ -1,3 +1,4 @@
 *.pyc
 
 .*project
+/secrets.txt
