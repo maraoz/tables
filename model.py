@@ -36,7 +36,7 @@ class Table(SerializableModel):
     
     @classmethod
     def get(cls, price):
-        return cls.all().filter("price =", price).get().to_dict_with_seats()
+        return cls.all().filter("price =", price).get()
     
     @classmethod
     def get_all(cls):
@@ -60,7 +60,7 @@ class Seat(SerializableModel):
     
     def reserve(self):
         if not self.is_empty():
-            raise ValueError 
+            return None
         self.state = RESERVED
         self.put()
         return self.purchase_addr
@@ -75,6 +75,13 @@ class Seat(SerializableModel):
     @classmethod
     def get_all(cls):
         return [seat.to_dict() for seat in cls.all().run()]
+    
+    @classmethod
+    def get(cls, price, n):
+        table = Table.get(price)
+        if not table:
+            return None
+        return cls.all().filter("table =", table).filter("number =", n).get()
     
 
 class GameHistory(SerializableModel):

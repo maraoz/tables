@@ -53,7 +53,7 @@ class TableInfoHandler(JsonAPIHandler):
         price = int(self.request.get("price"))
         if not price:
             return {"success": False, "error": "price parameter not found"}
-        table = Table.get(price)
+        table = Table.get(price).to_dict_with_seats()
         if not table:
             return {"success": False, "error": "table not found"}
         return {"success":True, "table": table}
@@ -62,6 +62,20 @@ class TablesListHandler(JsonAPIHandler):
     def handle(self):
         return {"success":True, "list": Table.get_all()}
 
+class SeatReserveHandler(JsonAPIHandler):
+    def handle(self):
+        price = int(self.request.get("price"))
+        n = int(self.request.get("n"))
+        if not price or not n:
+            return {"success": False, "error": "parameter not found"}
+        seat = Seat.get(price, n)
+        if not seat:
+            return {"success": False, "error": "seat not found"}
+        address = seat.reserve()
+        if not address:
+            return {"success": False, "error": "seat already reserved"}
+        return {"success":True, "address": address}
+
     
 app = webapp2.WSGIApplication([
     ('/((?!api).)*', StaticHandler),
@@ -69,6 +83,7 @@ app = webapp2.WSGIApplication([
     #frontend
     ('/api/tables/list', TablesListHandler),
     ('/api/tables/get', TableInfoHandler),
+    ('/api/seat/reserve', SeatReserveHandler),
     #backend
     ('/api/bootstrap', BootstrapHandler),
 ], debug=True)
