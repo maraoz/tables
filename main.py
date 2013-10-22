@@ -3,7 +3,7 @@
 
 import webapp2, json, jinja2, os, logging, datetime
 from model import Table, Seat, EMPTY, RESERVED, OCCUPIED
-from blockchain import new_address, btc2satoshi
+from blockchain import new_address, btc2satoshi, callback_secret_valid, get_tx
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -47,6 +47,48 @@ class BootstrapHandler(JsonAPIHandler):
                     seat.put()
                 
         return {"success":True}
+
+class CallbackHandler(webapp2.RequestHandler):
+    def get(self):
+        self.response.out.write(self.handle())
+
+    def get_pay_addr(self, tx):
+        return tx.get("inputs")[0].get("prev_out").get("addr")
+    
+    def process_bet(self, tx, address, better):
+        pass
+    
+    def handle(self):
+        secret = self.request.get("secret")
+        if not callback_secret_valid(secret):
+            return "error: secret"
+        test = self.request.get("test") == "true"
+        try:
+            tx_hash = self.request.get("transaction_hash")
+            address = self.request.get("address")
+            value = int(self.request.get("value"))
+        except ValueError, e:
+            return "error: value error"
+        
+        if not tx_hash:
+            return "error: no transaction_hash"
+    
+        if not address:
+            return "error: no address"
+        
+        if value <= 0:  # outgoing payment
+            return "*ok*"
+        
+        
+        tx = get_tx(tx_hash)
+        if not tx:
+            return "error: unable to retrieve tx."
+        better = self.get_pay_addr(tx)
+        
+        if not test:
+            result = self.process_bet(tx, address, better)
+        
+        return "*ok*"
     
 class TableInfoHandler(JsonAPIHandler):
     def handle(self):
@@ -86,5 +128,6 @@ app = webapp2.WSGIApplication([
     ('/api/seat/reserve', SeatReserveHandler),
     #backend
     ('/api/bootstrap', BootstrapHandler),
+    ('/api/callback', CallbackHandler),
 ], debug=True)
 
