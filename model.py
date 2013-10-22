@@ -29,14 +29,18 @@ class Table(SerializableModel):
         gh.put()
         return gh
     
+    def to_dict_with_seats(self):
+        d = self.to_dict()
+        d["seats"] = [seat.to_dict() for seat in self.seats]
+        return d
+    
+    @classmethod
+    def get(cls, price):
+        return cls.all().filter("price =", price).get().to_dict_with_seats()
+    
     @classmethod
     def get_all(cls):
-        r = []
-        for table in cls.all():
-            d = table.to_dict()
-            d["seats"] = [seat.to_dict() for seat in table.seats]
-            r.append(d)
-        return r
+        return [table.to_dict_with_seats() for table in cls.all()]
     
 class Seat(SerializableModel):
     table = db.ReferenceProperty(Table, collection_name='seats')

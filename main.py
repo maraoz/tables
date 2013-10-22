@@ -48,6 +48,16 @@ class BootstrapHandler(JsonAPIHandler):
                 
         return {"success":True}
     
+class TableInfoHandler(JsonAPIHandler):
+    def handle(self):
+        price = int(self.request.get("price"))
+        if not price:
+            return {"success": False, "error": "price parameter not found"}
+        table = Table.get(price)
+        if not table:
+            return {"success": False, "error": "table not found"}
+        return {"success":True, "table": table}
+
 class TablesListHandler(JsonAPIHandler):
     def handle(self):
         return {"success":True, "list": Table.get_all()}
@@ -58,6 +68,7 @@ app = webapp2.WSGIApplication([
     # API
     #frontend
     ('/api/tables/list', TablesListHandler),
+    ('/api/tables/get', TableInfoHandler),
     #backend
     ('/api/bootstrap', BootstrapHandler),
 ], debug=True)
