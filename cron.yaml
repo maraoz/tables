@@ -5,4 +5,4 @@ cron:
   
 - description: cancel reservations job
   url: /tasks/unreserve
-  schedule: every 1 mins
+  schedule: every 5 mins
