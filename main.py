@@ -63,6 +63,7 @@ class CallbackHandler(webapp2.RequestHandler):
         if not seat:
             return {"success": False, "reason": "Seat for address %s not found" % (address)}
         if seat.table.price > value:
+            logging.warn("Table price higher than paid value: (%s > %s)" % (seat.table.price, value))
             return "*ok*"
         seat.occupy(better)
         return "*ok*"

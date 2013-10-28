@@ -1,6 +1,5 @@
 from google.appengine.ext import db
 from random import randint
-import logging
 import datetime
 
 EMPTY, RESERVED, OCCUPIED = 0, 1, 2
@@ -26,7 +25,7 @@ class Table(SerializableModel):
             raise ValueError
         
         players = [seat.owner for seat in sorted(self.seats, key= lambda x: x.number)]
-        winner = randint(0, len(players))
+        winner = randint(0, len(players)-1)
         gh = GameHistory(table=self, winner=winner, players=players)
         gh.put()
         for seat in self.seats:
