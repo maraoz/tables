@@ -65,6 +65,9 @@ class CallbackHandler(webapp2.RequestHandler):
         if seat.table.price > value:
             logging.warn("Table price higher than paid value: (%s > %s)" % (seat.table.price, value))
             return "*ok*"
+        if not seat.is_reserved():
+            logging.warn("Received payment for a seat that isn't reserved: (%s, %s, %s)" % (seat.number, seat.table.price, value))
+            return "*ok*" 
         seat.occupy(better)
         return "*ok*"
     
