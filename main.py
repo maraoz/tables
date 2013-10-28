@@ -135,7 +135,10 @@ class PayoutTaskHandler(JsonAPIHandler):
                 players = gh.players
                 winner_address = players[gh.winner]
                 # TODO: should separate payment from table restart
-                payment(winner_address, int(table.price * HOUSE_EDGE), HOUSE_ADDRESS)
+                total_satoshis = table.price * len(players)
+                payout = int(total_satoshis * HOUSE_EDGE)
+                payment(winner_address, payout)
+                payment(HOUSE_ADDRESS, total_satoshis - payout)
                 
                 
         return {"success":True}
@@ -149,11 +152,11 @@ app = webapp2.WSGIApplication([
     ('/((?!api).)*', StaticHandler),
     
     # API
-    #frontend
+    # frontend
     ('/api/tables/list', TablesListHandler),
     ('/api/tables/get', TableInfoHandler),
     ('/api/seat/reserve', SeatReserveHandler),
-    #backend
+    # backend
     ('/api/bootstrap', BootstrapHandler),
     ('/api/callback', CallbackHandler),
     

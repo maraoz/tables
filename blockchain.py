@@ -54,9 +54,11 @@ def address_balance(addr):
         logging.error('There was an error contacting the Blockchain.info API')
         return None
 
-def payment(to, satoshis, _from):
+def payment(to, satoshis, _from=None):
     url = get_base_blockchain_url("payment")
-    url += "&to=%s&amount=%s&from=%s&shared=%s&fee=%s" % (to, int(satoshis), _from, "false", TX_FEES)
+    url += "&to=%s&amount=%s&shared=%s&fee=%s" % (to, int(satoshis), "false", TX_FEES)
+    if _from:
+        url += "&from=%s" % (_from)
     result = urlfetch.fetch(url)
     if result.status_code == 200:
         return json.loads(result.content).get("tx_hash")
