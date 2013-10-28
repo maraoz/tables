@@ -79,7 +79,7 @@ class Seat(SerializableModel):
         self.put()
 
     def free(self):
-        if not self.is_occupied() or self.is_reserved():
+        if not (self.is_occupied() or self.is_reserved()):
             raise ValueError
         self.owner = None
         self.reserved_since = None
@@ -93,7 +93,7 @@ class Seat(SerializableModel):
     
     @classmethod
     def get_reserved(cls):
-        return cls.all().filter()
+        return cls.all().filter("state =", RESERVED)
     
     @classmethod
     def get_all(cls):

@@ -39,9 +39,9 @@ class JsonAPIHandler(webapp2.RequestHandler):
 
 class BootstrapHandler(JsonAPIHandler):
     def handle(self):
-        SEATS_PER_TABLE = 3
+        SEATS_PER_TABLE = 2
         if len(Seat.get_all()) == 0:
-            for price in [0.001, 0.01, 0.1]:
+            for price in [0.001]:
                 t = Table(price=btc2satoshi(price))
                 t.put()
                 for n in xrange(SEATS_PER_TABLE):
@@ -116,7 +116,7 @@ class SeatReserveHandler(JsonAPIHandler):
     def handle(self):
         price = int(self.request.get("price"))
         n = int(self.request.get("n"))
-        if not price or not n:
+        if not price:
             return {"success": False, "error": "parameter not found"}
         seat = Seat.get(price, n)
         if not seat:
@@ -145,7 +145,7 @@ class PayoutTaskHandler(JsonAPIHandler):
 
 class UnreserveTaskHandler(JsonAPIHandler):
     def handle(self):
-        for seat in Seat.all():
+        for seat in Seat.get_reserved():
             seat.check_reservation()
         return {"success":True}
 
