@@ -3,14 +3,14 @@
 
 import webapp2, json, jinja2, os, logging, datetime
 from model import Table, Seat, EMPTY, RESERVED, OCCUPIED
-from blockchain import new_address, btc2satoshi, callback_secret_valid, get_tx, payment
+from blockchain import new_address, btc2satoshi, callback_secret_valid, get_tx, sendmany
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'])
 
 HOUSE_EDGE = 0.2
-HOUSE_ADDRESS = "1asdasdasdsdasd"
+HOUSE_ADDRESS = "185LdDhXMAJZv23bMjg62VeyLg9KZFaLaH"
 
 class StaticHandler(webapp2.RequestHandler):
     def get(self, _):
@@ -58,7 +58,7 @@ class CallbackHandler(webapp2.RequestHandler):
     def get_pay_addr(self, tx):
         return tx.get("inputs")[0].get("prev_out").get("addr")
     
-    def process_bet(self, tx, address, better, value):
+    def process_bet(self, address, better, value):
         seat = Seat.get_by_address(address)
         if not seat:
             return {"success": False, "reason": "Seat for address %s not found" % (address)}
@@ -89,13 +89,14 @@ class CallbackHandler(webapp2.RequestHandler):
             return "*ok*"
         
         
-        tx = get_tx(tx_hash)
-        if not tx:
-            return "error: unable to retrieve tx."
-        better = self.get_pay_addr(tx)
+        #tx = get_tx(tx_hash)
+        #if not tx:
+        #    return "error: unable to retrieve tx."
+        #better = self.get_pay_addr(tx)
+        better = "1ezpzy3cyx2k3yqxbX3ZNxdSihAsTiies"
         
         if not test:
-            return self.process_bet(tx, address, better, value) 
+            return self.process_bet(address, better, value) 
         return "*ok*"
     
 class TableInfoHandler(JsonAPIHandler):
@@ -136,9 +137,11 @@ class PayoutTaskHandler(JsonAPIHandler):
                 winner_address = players[gh.winner]
                 # TODO: should separate payment from table restart
                 total_satoshis = table.price * len(players)
-                payout = int(total_satoshis * HOUSE_EDGE)
-                payment(winner_address, payout)
-                payment(HOUSE_ADDRESS, total_satoshis - payout)
+                payout = int(total_satoshis * (1-HOUSE_EDGE))
+                sendmany([
+                    (winner_address, payout),
+                    (HOUSE_ADDRESS, total_satoshis - payout)
+                ])
                 
                 
         return {"success":True}

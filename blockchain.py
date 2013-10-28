@@ -16,7 +16,6 @@ CALLBACK_SECRET = ""
                                                                      
                                                                      
 
-
 # debugging
 class Mock():
     status_code = 500
@@ -69,7 +68,7 @@ def payment(to, satoshis, _from=None):
         logging.error('There was an error contacting the Blockchain.info API')
         return None
 
-def sendmany(_from, recipient_list):
+def sendmany(recipient_list, _from=None):
     url = get_base_blockchain_url("sendmany")
     # can't do it using python dict because we have repeated addresses
     recipients = "{"
@@ -77,7 +76,9 @@ def sendmany(_from, recipient_list):
         recipients += '"%s":%s,' % (addr, satoshis)
     recipients = recipients[:-1]
     recipients += "}"
-    url += "&from=%s&recipients=%s&shared=%s&fee=%s" % (_from, recipients, "false", TX_FEES)
+    url += "&recipients=%s&shared=%s&fee=%s" % (recipients, "false", TX_FEES)
+    if _from:
+        url += "&from=%s" % (_from)
     result = urlfetch.fetch(url)
     if result.status_code == 200:
         return json.loads(result.content).get("tx_hash")
