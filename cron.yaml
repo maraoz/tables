@@ -1,0 +1,4 @@
+cron:
+- description: payouts job
+  url: /tasks/payout
+  schedule: every 5 mins

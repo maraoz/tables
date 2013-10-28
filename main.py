@@ -3,11 +3,14 @@
 
 import webapp2, json, jinja2, os, logging, datetime
 from model import Table, Seat, EMPTY, RESERVED, OCCUPIED
-from blockchain import new_address, btc2satoshi, callback_secret_valid, get_tx
+from blockchain import new_address, btc2satoshi, callback_secret_valid, get_tx, payment
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'])
+
+HOUSE_EDGE = 0.2
+HOUSE_ADDRESS = "1asdasdasdsdasd"
 
 class StaticHandler(webapp2.RequestHandler):
     def get(self, _):
@@ -55,8 +58,14 @@ class CallbackHandler(webapp2.RequestHandler):
     def get_pay_addr(self, tx):
         return tx.get("inputs")[0].get("prev_out").get("addr")
     
-    def process_bet(self, tx, address, better):
-        pass
+    def process_bet(self, tx, address, better, value):
+        seat = Seat.get_by_address(address)
+        if not seat:
+            return {"success": False, "reason": "Seat for address %s not found" % (address)}
+        if seat.table.price > value:
+            return "*ok*"
+        seat.occupy(better)
+        return "*ok*"
     
     def handle(self):
         secret = self.request.get("secret")
@@ -86,8 +95,7 @@ class CallbackHandler(webapp2.RequestHandler):
         better = self.get_pay_addr(tx)
         
         if not test:
-            result = self.process_bet(tx, address, better)
-        
+            return self.process_bet(tx, address, better, value) 
         return "*ok*"
     
 class TableInfoHandler(JsonAPIHandler):
@@ -118,9 +126,28 @@ class SeatReserveHandler(JsonAPIHandler):
             return {"success": False, "error": "seat already reserved"}
         return {"success":True, "address": address}
 
-    
+
+class PayoutTaskHandler(JsonAPIHandler):
+    def handle(self):
+        for table in Table.all():
+            if table.is_ready():
+                gh = table.pick_random()
+                players = gh.players
+                winner_address = players[gh.winner]
+                # TODO: should separate payment from table restart
+                payment(winner_address, int(table.price * HOUSE_EDGE), HOUSE_ADDRESS)
+                
+                
+        return {"success":True}
+
+   
 app = webapp2.WSGIApplication([
+    # cron tasks
+    ('/tasks/payout', PayoutTaskHandler),
+    
+    # static files
     ('/((?!api).)*', StaticHandler),
+    
     # API
     #frontend
     ('/api/tables/list', TablesListHandler),
@@ -129,5 +156,6 @@ app = webapp2.WSGIApplication([
     #backend
     ('/api/bootstrap', BootstrapHandler),
     ('/api/callback', CallbackHandler),
+    
 ], debug=True)
 

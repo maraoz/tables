@@ -5,7 +5,7 @@ import logging
 EMPTY, RESERVED, OCCUPIED = 0, 1, 2
 SEAT_STATES = [EMPTY, RESERVED, OCCUPIED]
 
-HOUSE_EDGE = 0.2
+
 class SerializableModel(db.Model):
     def to_dict(self):
         return db.to_dict(self)
@@ -27,6 +27,8 @@ class Table(SerializableModel):
         players = [seat.owner for seat in self.seats]
         gh = GameHistory(table=self, winner=winner, players=players)
         gh.put()
+        for seat in self.seats:
+            seat.free()
         return gh
     
     def to_dict_with_seats(self):
@@ -71,6 +73,13 @@ class Seat(SerializableModel):
         self.owner = owner
         self.state = OCCUPIED
         self.put()
+
+    def free(self):
+        if not self.is_occupied():
+            raise ValueError
+        self.owner = None
+        self.state = EMPTY
+        self.put()
     
     @classmethod
     def get_all(cls):
@@ -82,6 +91,10 @@ class Seat(SerializableModel):
         if not table:
             return None
         return cls.all().filter("table =", table).filter("number =", n).get()
+    
+    @classmethod
+    def get_by_address(cls, address):
+        return cls.all().filter("purchase_addr =", address).get()
     
 
 class GameHistory(SerializableModel):
