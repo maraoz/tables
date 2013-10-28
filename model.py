@@ -1,10 +1,12 @@
 from google.appengine.ext import db
 from random import randint
 import logging
+import datetime
 
 EMPTY, RESERVED, OCCUPIED = 0, 1, 2
 SEAT_STATES = [EMPTY, RESERVED, OCCUPIED]
 
+SEAT_RESERVATION_TIME = datetime.timedelta(minutes=5)
 
 class SerializableModel(db.Model):
     def to_dict(self):
@@ -50,6 +52,7 @@ class Seat(SerializableModel):
     purchase_addr = db.StringProperty(required=True)
     state = db.IntegerProperty(required=True, choices=SEAT_STATES)
     owner = db.StringProperty()
+    reserved_since = db.DateTimeProperty()
     
     def is_empty(self):
         return self.state == EMPTY
@@ -64,6 +67,7 @@ class Seat(SerializableModel):
         if not self.is_empty():
             return None
         self.state = RESERVED
+        self.reserved_since = datetime.datetime.now()
         self.put()
         return self.purchase_addr
     
@@ -75,11 +79,21 @@ class Seat(SerializableModel):
         self.put()
 
     def free(self):
-        if not self.is_occupied():
+        if not self.is_occupied() or self.is_reserved():
             raise ValueError
         self.owner = None
+        self.reserved_since = None
         self.state = EMPTY
         self.put()
+    
+    def check_reservation(self):
+        now = datetime.datetime.now()
+        if now > self.reserved_since + SEAT_RESERVATION_TIME:
+            self.free()
+    
+    @classmethod
+    def get_reserved(cls):
+        return cls.all().filter()
     
     @classmethod
     def get_all(cls):

@@ -143,10 +143,18 @@ class PayoutTaskHandler(JsonAPIHandler):
                 
         return {"success":True}
 
+class UnreserveTaskHandler(JsonAPIHandler):
+    def handle(self):
+        for seat in Seat.all():
+            seat.check_reservation()
+        return {"success":True}
+
    
 app = webapp2.WSGIApplication([
     # cron tasks
     ('/tasks/payout', PayoutTaskHandler),
+    ('/tasks/unreserve', UnreserveTaskHandler),
+    
     
     # static files
     ('/((?!api).)*', StaticHandler),
