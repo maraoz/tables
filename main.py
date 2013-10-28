@@ -89,11 +89,10 @@ class CallbackHandler(webapp2.RequestHandler):
             return "*ok*"
         
         
-        #tx = get_tx(tx_hash)
-        #if not tx:
-        #    return "error: unable to retrieve tx."
-        #better = self.get_pay_addr(tx)
-        better = "1ezpzy3cyx2k3yqxbX3ZNxdSihAsTiies"
+        tx = get_tx(tx_hash)
+        if not tx:
+            return "error: unable to retrieve tx."
+        better = self.get_pay_addr(tx)
         
         if not test:
             return self.process_bet(address, better, value) 
