@@ -23,8 +23,8 @@ class Table(SerializableModel):
         if not self.is_ready():
             raise ValueError
         
-        winner = randint(0, len(self.seats))
-        players = [seat.owner for seat in self.seats]
+        players = [seat.owner for seat in sorted(self.seats, key= lambda x: x.number)]
+        winner = randint(0, len(players))
         gh = GameHistory(table=self, winner=winner, players=players)
         gh.put()
         for seat in self.seats:
