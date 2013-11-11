@@ -10,7 +10,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'])
 
 HOUSE_EDGE = 0.2
-HOUSE_ADDRESS = "185LdDhXMAJZv23bMjg62VeyLg9KZFaLaH"
+HOUSE_ADDRESS = "1PMFUYoqpGP7n5R4VoBGmfWrcD67bc9eYC"
 
 class StaticHandler(webapp2.RequestHandler):
     def get(self, _):
