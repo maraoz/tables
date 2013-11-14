@@ -17,17 +17,15 @@ $(document).ready(function() {
 	
 	var tables = {};
 	
-	
-	var open_tab = function(id) {
+	var open_tab = null;
+	open_tab = function(id) {
 		$(".current").toggleClass("current");
 		$("#tab_content").empty();
-		$("#tab_content").load("/room", function() {
-			$("#room_price").html(tables[id].price_btc);
-		});
 		
 		cufon_replace();
-		var load_table = null;
-		load_table = function() {
+			
+		$("#tab_content").load("/room", function() {
+			$("#room_price").html(tables[id].price_btc);
 			var seats = $("#seats");
 			seats.html("");
 			var data = tables[id].seats;
@@ -52,7 +50,7 @@ $(document).ready(function() {
 					    				" and press OK when done. Your seat will be reserved for " +
 					    				"5 minutes.", s.purchase_addr);
 			    				s.state = 1;
-			    				load_table();
+			    				open_tab(id);
 			    			}
 			    		});
 			    		
@@ -60,10 +58,8 @@ $(document).ready(function() {
 			    }
 			    //.prepend($('<a></a>').attr({ href: "#" }).text("LINK"))
 			});
-		};
-		setTimeout(load_table, 200);
-		
-	}
+		});
+	};
 	
 	$.getJSON("/api/tables/list", function(data) {
 		if (data.success == true) {
