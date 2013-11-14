@@ -2,7 +2,7 @@
 
 
 import webapp2, json, jinja2, os, logging, datetime
-from model import Table, Seat, EMPTY, RESERVED, OCCUPIED
+from model import Table, Seat, EMPTY, RESERVED, OCCUPIED, SEAT_RESERVATION_TIME
 from blockchain import new_address, btc2satoshi, callback_secret_valid, get_tx, sendmany
 
 JINJA_ENVIRONMENT = jinja2.Environment(

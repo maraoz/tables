@@ -26,25 +26,42 @@ $(document).ready(function() {
 		});
 		
 		cufon_replace();
-		var load_table = function() {
+		var load_table = null;
+		load_table = function() {
 			var seats = $("#seats");
 			seats.html("");
-			alert(JSON.stringify(tables[id].seats[0]));
 			var data = tables[id].seats;
 			var items = [];
+			data.sort(function(a,b){return a.number-b.number});
 			$.each(data, function(key, s) {
-				alert(key + " "+s);
-				items.push(
-						"<tr> \
-						<td>"+s.number+"</td> \
-						<td>"+status_str[s.state]+"</td> \
-						<td>"+s.owner+"</td> \
-					</tr>"		
-				);
+			    var row = $('<tr></tr>').appendTo(seats);
+			    $('<td></td>').text("#"+(s.number+1)).appendTo(row);
+			    $('<td></td>').text(status_str[s.state]).appendTo(row);  
+			    var play = $('<td></td>').appendTo(row);
+			    if (s.state == 0) {
+			    	var link = play.append($('<a></a>').text("Take"));
+			    	link.click(function(){
+			    		$.getJSON("/api/seat/reserve", {
+			    			price: tables[id].price,
+			    			n: s.number
+			    		},
+			    		function(data) {
+			    			if (data.success == true) {
+			    				var answer=window.prompt("Seat reserved. To take the seat, please send "+
+					    				tables[id].price/100000000+" BTC to "+s.purchase_addr+
+					    				" and press OK when done. Your seat will be reserved for " +
+					    				"5 minutes.", s.purchase_addr);
+			    				s.state = 1;
+			    				load_table();
+			    			}
+			    		});
+			    		
+			    	});
+			    }
+			    //.prepend($('<a></a>').attr({ href: "#" }).text("LINK"))
 			});
-			seats.html(items.join(""));
 		};
-		setTimeout(load_table, 100);
+		setTimeout(load_table, 200);
 		
 	}
 	
