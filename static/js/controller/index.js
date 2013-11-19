@@ -6,24 +6,38 @@ $(document).ready(function() {
 			2: "Occupied"
 	};
 	
+	$.ajaxSetup({
+	    beforeSend:function(){
+	        $("#loading").show();
+	    },
+	    complete:function(){
+	        $("#loading").hide();
+	    }
+	});
+	
 	var home_tab = $("#home_tab");
 	var home_content = $("#tab_content").html();
 	home_tab.click(function() {
 		$(".current").toggleClass("current");
-		$(this).toggleClass("current");
+		$(this).children("a").toggleClass("current");
 		$("#tab_content").empty();
 		$("#tab_content").html(home_content);
+	});
+	
+	var howto_tab = $("#howto_tab");
+	howto_tab.click(function(){
+		$(".current").toggleClass("current");
+		$(this).children("a").toggleClass("current");
+		$("#tab_content").empty();
+		$("#tab_content").load("/howtoplay", function() {
+			cufon_replace();
+		});
 	});
 	
 	var tables = {};
 	
 	var open_tab = null;
 	open_tab = function(id) {
-		$(".current").toggleClass("current");
-		$("#tab_content").empty();
-		
-		cufon_replace();
-			
 		$("#tab_content").load("/room", function() {
 			$("#room_price").html(tables[id].price_btc);
 			var seats = $("#seats");
@@ -56,8 +70,8 @@ $(document).ready(function() {
 			    		
 			    	});
 			    }
-			    //.prepend($('<a></a>').attr({ href: "#" }).text("LINK"))
 			});
+			cufon_replace();
 		});
 	};
 	
@@ -71,12 +85,18 @@ $(document).ready(function() {
 				home_tab.after('<li><a id="tab_'+i+'">Room '+price_btc+'<span></span></a></li>');
 				$("#tab_"+i).click(function() {
 					var id = $(this).attr("id").split("_")[1];
-					$(this).toggleClass("current");
+					$(".current").toggleClass("current");
+					$(this).children("a").toggleClass("current");
+					$("#tab_content").empty();
 					open_tab(id);
 				});
 			}
-			cufon_replace();
 		}
+		cufon_replace();
+	});
+	
+	$("#banner_button").click(function(){
+		$("#tab_"+1).click();
 	});
 	
 	Cufon.now(); 
