@@ -39,15 +39,17 @@ class JsonAPIHandler(webapp2.RequestHandler):
 
 class BootstrapHandler(JsonAPIHandler):
     def handle(self):
-        SEATS_PER_TABLE = 3
+        SEATS_PER_TABLE = 10
         if len(Seat.get_all()) == 0:
-            for price in [0.001, 0.1, 1]:
+            for price in [0.01, 0.02, 0.05, 0.10, 0.50]:
                 t = Table(price=btc2satoshi(price))
                 t.put()
                 for n in xrange(SEATS_PER_TABLE):
                     seat = Seat(table=t, number=n, purchase_addr=new_address(), state=EMPTY)
                     seat.table = t
                     seat.put()
+                    from time import sleep
+                    sleep(1)
                 
         return {"success":True}
 
@@ -140,7 +142,7 @@ class PayoutTaskHandler(JsonAPIHandler):
                 winner_address = players[gh.winner]
                 # TODO: should separate payment from table restart
                 total_satoshis = table.price * len(players)
-                payout = int(total_satoshis * (1-HOUSE_EDGE))
+                payout = int(total_satoshis * (1 - HOUSE_EDGE))
                 sendmany([
                     (winner_address, payout),
                     (HOUSE_ADDRESS, total_satoshis - payout)

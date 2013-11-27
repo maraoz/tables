@@ -5,24 +5,10 @@ Blockchain.info Python Client for the JSON Merchant API for Google App Engine.
 from google.appengine.api import urlfetch
 import logging
 import json
+from secrets import BLOCKCHAIN_WALLET_GUID, BLOCKCHAIN_PASSWORD, CALLBACK_SECRET
 
 TX_FEES = 10000
 B2S = 100000000 
-
-BLOCKCHAIN_WALLET_GUID = ""
-BLOCKCHAIN_PASSWORD = ""
-CALLBACK_SECRET = ""
-
-
-
-
-
-
-
-
-
-
-
 
 
 # debugging
