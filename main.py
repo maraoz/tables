@@ -40,16 +40,15 @@ class JsonAPIHandler(webapp2.RequestHandler):
 class BootstrapHandler(JsonAPIHandler):
     def handle(self):
         SEATS_PER_TABLE = 10
-        if len(Seat.get_all()) == 0:
-            for price in [0.01, 0.02, 0.05, 0.10, 0.50]:
-                t = Table(price=btc2satoshi(price))
-                t.put()
-                for n in xrange(SEATS_PER_TABLE):
-                    seat = Seat(table=t, number=n, purchase_addr=new_address(), state=EMPTY)
-                    seat.table = t
-                    seat.put()
-                    from time import sleep
-                    sleep(1)
+        for price in [0.05, 0.10, 0.50]:
+            t = Table(price=btc2satoshi(price))
+            t.put()
+            for n in xrange(SEATS_PER_TABLE):
+                seat = Seat(table=t, number=n, purchase_addr=new_address(), state=EMPTY)
+                seat.table = t
+                seat.put()
+                from time import sleep
+                sleep(1)
                 
         return {"success":True}
 

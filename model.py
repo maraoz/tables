@@ -43,7 +43,9 @@ class Table(SerializableModel):
     
     @classmethod
     def get_all(cls):
-        return [table.to_dict_with_seats() for table in cls.all()]
+        un = [table.to_dict_with_seats() for table in cls.all()]
+        un.sort(key=lambda table: table["price"], reverse=True)
+        return un
     
 class Seat(SerializableModel):
     table = db.ReferenceProperty(Table, collection_name='seats')
