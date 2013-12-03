@@ -118,7 +118,7 @@ class TablesListHandler(JsonAPIHandler):
     def handle(self):
         return {"success":True, "list": Table.get_all()}
 
-class SeatReserveHandler(JsonAPIHandler):
+class SeatHandler(JsonAPIHandler):
     def handle(self):
         price = int(self.request.get("price"))
         n = int(self.request.get("n"))
@@ -127,10 +127,18 @@ class SeatReserveHandler(JsonAPIHandler):
         seat = Seat.get(price, n)
         if not seat:
             return {"success": False, "error": "seat not found"}
+        return self.handle_seat(seat)
+
+class SeatReserveHandler(SeatHandler):
+    def handle_seat(self, seat):
         address = seat.reserve()
         if not address:
             return {"success": False, "error": "seat already reserved"}
         return {"success":True, "address": address}
+
+class SeatCancelHandler(SeatHandler):
+    def handle_seat(self, seat):
+        return {"success": seat.free()}
 
 
 class PayoutTaskHandler(JsonAPIHandler):
@@ -172,9 +180,10 @@ app = webapp2.WSGIApplication([
     ('/api/tables/list', TablesListHandler),
     ('/api/tables/get', TableInfoHandler),
     ('/api/seat/reserve', SeatReserveHandler),
+    ('/api/seat/cancel', SeatCancelHandler),
     # backend
     ('/api/bootstrap', BootstrapHandler),
     ('/api/callback', CallbackHandler),
     
-], debug=True)
+], debug=False)
 

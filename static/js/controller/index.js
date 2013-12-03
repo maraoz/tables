@@ -63,6 +63,18 @@ $(document).ready(function() {
 					    				tables[id].price/100000000+" BTC to "+s.purchase_addr+
 					    				" and press OK when done. Your seat will be reserved for " +
 					    				"5 minutes.", s.purchase_addr);
+			    				if (!answer) {
+			    					$.getJSON("/api/seat/cancel", {
+						    			price: tables[id].price,
+						    			n: s.number
+						    		},
+						    		function(data) {
+						    			if (data.success == true) {
+						    				s.state = 0;
+						    				open_tab(id);
+						    			}
+						    		});
+			    				}
 			    				s.state = 1;
 			    				open_tab(id);
 			    			}

@@ -74,18 +74,18 @@ class Seat(SerializableModel):
     
     def occupy(self, owner):
         if not self.is_reserved():
-            raise ValueError 
+            return False
         self.owner = owner
         self.state = OCCUPIED
         self.put()
+        return True
 
     def free(self):
-        if not (self.is_occupied() or self.is_reserved()):
-            raise ValueError
         self.owner = None
         self.reserved_since = None
         self.state = EMPTY
         self.put()
+        return True
     
     def check_reservation(self):
         now = datetime.datetime.now()
