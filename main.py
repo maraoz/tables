@@ -138,7 +138,7 @@ class SeatReserveHandler(SeatHandler):
 
 class SeatCancelHandler(SeatHandler):
     def handle_seat(self, seat):
-        return {"success": seat.free()}
+        return {"success": seat.cancel()}
 
 
 class PayoutTaskHandler(JsonAPIHandler):

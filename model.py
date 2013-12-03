@@ -87,6 +87,14 @@ class Seat(SerializableModel):
         self.put()
         return True
     
+    def cancel(self):
+        if not self.is_reserved():
+            return False
+        self.owner = None
+        self.reserved_since = None
+        self.state = EMPTY
+        self.put()
+    
     def check_reservation(self):
         now = datetime.datetime.now()
         if now > self.reserved_since + SEAT_RESERVATION_TIME:

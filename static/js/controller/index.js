@@ -71,8 +71,8 @@ $(document).ready(function() {
 						    		function(data) {
 						    			if (data.success == true) {
 						    				s.state = 0;
-						    				open_tab(id);
 						    			}
+						    			open_tab(id);
 						    		});
 			    				}
 			    				s.state = 1;
