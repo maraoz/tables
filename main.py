@@ -39,8 +39,9 @@ class JsonAPIHandler(webapp2.RequestHandler):
 
 class BootstrapHandler(JsonAPIHandler):
     def handle(self):
+        p = float(self.request.get("p"))
         SEATS_PER_TABLE = 10
-        for price in [0.05, 0.10, 0.50]:
+        for price in [p]:
             t = Table(price=btc2satoshi(price))
             t.put()
             for n in xrange(SEATS_PER_TABLE):
