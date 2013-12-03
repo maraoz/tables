@@ -34,7 +34,13 @@ class Table(SerializableModel):
     
     def to_dict_with_seats(self):
         d = self.to_dict()
-        d["seats"] = [seat.to_dict() for seat in self.seats]
+        seats = [seat.to_dict() for seat in self.seats]
+        for seat in seats:
+            del seat["reserved_since"]
+            del seat["owner"]
+            del seat["table"]
+            del seat["purchase_addr"]
+        d["seats"] = seats
         return d
     
     @classmethod
@@ -94,6 +100,7 @@ class Seat(SerializableModel):
         self.reserved_since = None
         self.state = EMPTY
         self.put()
+        return True
     
     def check_reservation(self):
         now = datetime.datetime.now()

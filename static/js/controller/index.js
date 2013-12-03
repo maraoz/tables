@@ -60,9 +60,9 @@ $(document).ready(function() {
 			    		function(data) {
 			    			if (data.success == true) {
 			    				var answer=window.prompt("Seat reserved. To take the seat, please send "+
-					    				tables[id].price/100000000+" BTC to "+s.purchase_addr+
+					    				tables[id].price/100000000+" BTC to "+data.address+
 					    				" and press OK when done. Your seat will be reserved for " +
-					    				"5 minutes.", s.purchase_addr);
+					    				"5 minutes.", data.address);
 			    				if (!answer) {
 			    					$.getJSON("/api/seat/cancel", {
 						    			price: tables[id].price,
